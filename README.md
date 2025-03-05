@@ -1,4 +1,4 @@
-# Lazy Schema Migration Library
+# NoSQL Lazy Schema Migration Library
 
 This is a golang library for on-the-fly/lazy migrations.
 
