@@ -1,6 +1,6 @@
-# NoSQL Lazy Schema Migration Library
+# Lazy Schema Migration Library for JSON/BSON entities
 
-This is a golang library for on-the-fly/lazy migrations.
+This is a golang library for on-the-fly/lazy migrations for JSON/BSON entities.
 
 When doing migrations, it can be difficult to execute stop-the-world migrations
 and migrate all the data at once. This is a library that shall enable the
