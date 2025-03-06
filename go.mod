@@ -1,4 +1,4 @@
-module github.com/lerenn/lazy-schema-migration
+module github.com/lerenn/lazymigson
 
 go 1.21.3
 

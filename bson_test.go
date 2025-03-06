@@ -1,4 +1,4 @@
-package csm
+package lazymigson
 
 import (
 	"testing"

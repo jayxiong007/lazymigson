@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	lsm "github.com/lerenn/lazy-schema-migration"
+	"github.com/lerenn/lazymigson"
 )
 
 type EntityV1 struct {
@@ -23,11 +23,11 @@ type EntityV3 struct {
 }
 
 var (
-	migrations = []lsm.MigrationJSON{
+	migrations = []lazymigson.MigrationJSON{
 		// From Person V1 to V2
 		func(data []byte) ([]byte, error) {
 			// Use WrapperJSON to get V1 and V2 forms
-			return lsm.WrapperJSON(data, func(v1 EntityV1) (EntityV2, error) {
+			return lazymigson.WrapperJSON(data, func(v1 EntityV1) (EntityV2, error) {
 				// Split the fullname between last name and first names
 				names := strings.Split(v1.FullName, " ")
 				firstNames, lastName := "", ""
@@ -46,7 +46,7 @@ var (
 		// From Person V2 to V3
 		func(data []byte) ([]byte, error) {
 			// Use WrapperJSON to get V2 and V3 forms
-			return lsm.WrapperJSON(data, func(v2 EntityV2) (EntityV3, error) {
+			return lazymigson.WrapperJSON(data, func(v2 EntityV2) (EntityV3, error) {
 				// Set the new version with no age, as we have no mean to know it
 				return EntityV3{
 					FirstNames: v2.FirstNames,
@@ -59,7 +59,7 @@ var (
 
 func CreateNewObject() {
 	// Create a new migrator
-	mig := lsm.NewMigratorJSON[EntityV3](migrations)
+	mig := lazymigson.NewMigratorJSON[EntityV3](migrations)
 
 	// Create a new object
 	newEntry := EntityV3{
@@ -78,7 +78,7 @@ func CreateNewObject() {
 
 func UseOldObject() {
 	// Create a new migrator
-	mig := lsm.NewMigratorJSON[EntityV3](migrations)
+	mig := lazymigson.NewMigratorJSON[EntityV3](migrations)
 
 	// Importing an old object, do some modifications and save it as last version
 	data := []byte(`{"FullName":"John Robert Reddington","__schema_version":1}`)

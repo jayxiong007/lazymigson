@@ -1,4 +1,4 @@
-package csm
+package lazymigson
 
 type EntryV1 struct {
 	FirstName, LastName string

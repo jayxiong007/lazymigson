@@ -1,4 +1,4 @@
-package csm
+package lazymigson
 
 // Migrator is the interface that every migrator should satisfy to respect
 // libraries engagements.

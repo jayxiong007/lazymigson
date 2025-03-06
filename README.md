@@ -7,13 +7,23 @@ and migrate all the data at once. This is a library that shall enable the
 migration when the data is retrieved/stored, and even a second time to convert
 the remaining data:
 
-```mermaid
-flowchart TB
+```mermaid 
+sequenceDiagram
+    Developer ->> Environment: Deploy a new version with a new migration
+    Environment ->> MigrationJob: Run migration job
+    MigrationJob ->> Database: Migrate existing data
+    activate Database
 
-Initial[Before migration]--Deploy code-->Progressive[Migrate entity when created/updated];
-Progressive-->Progressive
-Progressive--If completion needed-->Full[Migrate remaining data];
-Full-->Migrated;
+    User ->> Application: Do a request
+    activate Application
+    Application ->> Database: Query entity that has not been migrated
+    Application ->> Application: Migrate entity
+    Application ->> Application: Do stuff
+    Application ->> Database: Save entity with new schema
+    deactivate Application
+
+    Database -->> MigrationJob: Done
+    deactivate Database
 ```
 
 Let's have an example with a migration for a Person entity from v1 to v2:
