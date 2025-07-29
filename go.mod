@@ -1,4 +1,4 @@
-module github.com/jayxiong/lazymigson
+module github.com/jayxiong007/lazymigson
 
 go 1.21.3
 
