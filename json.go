@@ -26,7 +26,15 @@ func WrapperJSON[A, B any](data []byte, fn func(A) (B, error)) ([]byte, error) {
 		return nil, err
 	}
 
-	return json.Marshal(b)
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+
+	err = encoder.Encode(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 // MigrationJSON is the function signature for JSON object migration.
@@ -124,13 +132,19 @@ func (mj *MigratorJSON[T]) getMigrationsFromVersion(version int) ([]MigrationJSO
 // Export exports a T type object into a JSON object, adding the version number
 // to the JSON object.
 func (mj *MigratorJSON[T]) Export(entity T) ([]byte, error) {
-	b, err := json.Marshal(entity)
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+
+	err := encoder.Encode(entity)
 	if err != nil {
-		return b, err
+		return nil, err
 	}
 
+	b := buf.Bytes()
+
 	str := string(b)
-	str = fmt.Sprintf("{%s,%q:%d}", b[1:len(str)-1], VersionFieldKey, mj.LastVersion())
+	// json.Encoder add extra \n
+	str = fmt.Sprintf("{%s,%q:%d}", b[1:len(str)-2], VersionFieldKey, mj.LastVersion())
 
 	return []byte(str), nil
 }
