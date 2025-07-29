@@ -1,6 +1,7 @@
 package lazymigson
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -11,7 +12,12 @@ import (
 // resulting object of type B into a JSON.
 func WrapperJSON[A, B any](data []byte, fn func(A) (B, error)) ([]byte, error) {
 	var a A
-	if err := json.Unmarshal(data, &a); err != nil {
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	// Crucial step to use json.Number
+	decoder.UseNumber()
+
+	if err := decoder.Decode(&a); err != nil {
 		return nil, err
 	}
 
@@ -68,29 +74,43 @@ func (mj *MigratorJSON[T]) Import(data []byte) (T, error) {
 	}
 
 	var output T
-	err = json.Unmarshal(data, &output)
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	// Crucial step to use json.Number
+	decoder.UseNumber()
+
+	err = decoder.Decode(&output)
 	return output, err
 }
 
 func (mj *MigratorJSON[T]) getVersion(data []byte) (int, error) {
 	var mappedEntry map[string]any
-	if err := json.Unmarshal(data, &mappedEntry); err != nil {
-		return 0, err
-	}
+
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	// Crucial step to use json.Number
+	decoder.UseNumber()
+
+	if err := decoder.Decode(&mappedEntry); err != nil {
+                return 0, err
+        }
 
 	rawVersion, exists := mappedEntry[VersionFieldKey]
 	if !exists {
 		return 0, fmt.Errorf("%w: %s", ErrNoVersion, string(data))
 	}
 
-	version, ok := rawVersion.(float64)
+	version, ok := rawVersion.(json.Number)
 	if !ok {
 		return 0, fmt.Errorf("%w: %q", ErrInvalidVersionFormat, reflect.TypeOf(rawVersion))
 	}
 
+	versionInt64, err := version.Int64()
+	if err != nil {
+		return 0, fmt.Errorf("Error converting json.Number to int64: %v\n", err)
+	}
 	// TODO: check version is unit
 
-	return int(version), nil
+	return int(versionInt64), nil
 }
 
 func (mj *MigratorJSON[T]) getMigrationsFromVersion(version int) ([]MigrationJSON, error) {
